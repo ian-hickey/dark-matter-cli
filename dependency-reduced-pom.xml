@@ -12,11 +12,17 @@
         <configuration>
           <archive>
             <manifest>
-              <addClasspath>true</addClasspath>
-              <classpathPrefix>lib/</classpathPrefix>
               <mainClass>${maven-jar-plugin.mainClass}</mainClass>
             </manifest>
+            <manifestEntries>
+              <Class-Path>.</Class-Path>
+            </manifestEntries>
           </archive>
+          <excludes>
+            <exclude>META-INF/*.SF</exclude>
+            <exclude>META-INF/*.DSA</exclude>
+            <exclude>META-INF/*.RSA</exclude>
+          </excludes>
         </configuration>
       </plugin>
       <plugin>
@@ -37,10 +43,6 @@
             </configuration>
           </execution>
         </executions>
-      </plugin>
-      <plugin>
-        <artifactId>maven-wrapper-plugin</artifactId>
-        <version>3.2.0</version>
       </plugin>
     </plugins>
   </build>
