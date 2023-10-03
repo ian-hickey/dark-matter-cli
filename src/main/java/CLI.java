@@ -9,6 +9,16 @@ import java.util.HashMap;
 public class CLI {
 
     public static void main(String[] args) {
+        String logo = """
+                        ______   _______  ______    ___   _    __   __  _______  _______  _______  _______  ______  \s
+                       |      | |   _   ||    _ |  |   | | |  |  |_|  ||   _   ||       ||       ||       ||    _ | \s
+                       |  _    ||  |_|  ||   | ||  |   |_| |  |       ||  |_|  ||_     _||_     _||    ___||   | || \s
+                       | | |   ||       ||   |_||_ |      _|  |       ||       |  |   |    |   |  |   |___ |   |_||_\s
+                       | |_|   ||       ||    __  ||     |_   |       ||       |  |   |    |   |  |    ___||    __  |
+                       |       ||   _   ||   |  | ||    _  |  | ||_|| ||   _   |  |   |    |   |  |   |___ |   |  | |
+                       |______| |__| |__||___|  |_||___| |_|  |_|   |_||__| |__|  |___|    |___|  |_______||___|  |_|                                                                                                               \s
+                """;
+        System.out.println(logo + "\uD83D\uDE80");
         var templateMap = new HashMap<String, String>() {{
             put("resource", "ExampleResource.cfc");
             put("entity", "ExampleEntity.cfc");
