@@ -1,7 +1,6 @@
 import org.apache.commons.cli.*;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
 import java.io.File;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.io.IOException;
 import java.nio.file.*;
@@ -16,7 +15,7 @@ public class CLI {
             put("todo", "Todo.cfc");
         }};
         Options options = new Options();
-        Option projectNameOption = new Option("p", "project-name", true, "Project name. No spaces. Lowercase. " +
+        Option projectNameOption = new Option("n", "project-name", true, "Project name. No spaces. Lowercase. " +
                 "(todo, my-todo-app)");
         projectNameOption.setRequired(true);
         options.addOption(projectNameOption);
@@ -51,37 +50,43 @@ public class CLI {
 
         try {
             // Clone the git repository
-            Git git = Git.cloneRepository()
-                    .setURI(gitUrl)
-                    .setDirectory(new File(projectName))
-                    .call();
-            git.close();
+            ProcessBuilder processBuilder = new ProcessBuilder("git", "clone", gitUrl, projectName);
+            try {
+                Process process = processBuilder.start();
+                process.waitFor();
+            } catch (IOException | InterruptedException e) {
+                e.printStackTrace();
+            }
 
             // Create the directory structure
             Path directoryPath = Paths.get(projectName + File.separator
-                    + "src"+ File.separator + "main " + File.separator + "cfscript" + File.separator
+                    + "src"+ File.separator + "main" + File.separator + "cfscript" + File.separator
                     + packageName.replace(".", File.separator));
             Files.createDirectories(directoryPath);
 
             // Copy the template file
-            String tempPath = projectName + File.separator + "src"+ File.separator + "main " +
+            String tempPath = projectName + File.separator + "src"+ File.separator + "main" +
                     File.separator + "resources" + File.separator + "templates" + File.separator +
                     templateMap.get(template);
+            InputStream resourceStream = CLI.class.getResourceAsStream(
+                    File.separator + "templates" + File.separator + templateMap.get(template));
 
-            Path templatePath = Paths.get(tempPath);
-            Path destinationPath = directoryPath.resolve(templatePath.getFileName());
-            Files.copy(templatePath, destinationPath);
+            if (resourceStream != null) {
+                // Copy the example to the new project
+                Path templatePath = Paths.get(tempPath);
+                Path destinationPath = directoryPath.resolve(templatePath.getFileName());
+                Files.copy(resourceStream, destinationPath);
 
-            // Update the groupid and artifact id in the POM file
-            tempPath = projectName + File.separator + "POM.xml"+ File.separator;
-            templatePath = Paths.get(tempPath);
-            destinationPath = directoryPath.resolve(templatePath.getFileName());
-            String content = new String(Files.readAllBytes(destinationPath));
-            content = content.replace("<groupId>org.ionatomics.darkmatter</groupId>", "<groupId>" + packageName + "</groupId>");
-            content = content.replace("<artifactId>starter</artifactId>", "<artifactId>" + projectName + "</artifactId>");
-            Files.write(destinationPath, content.getBytes());
+                // Update the groupid and artifact id in the POM file
+                var pomPath = projectName + File.separator + "pom.xml"+ File.separator;
+                var pomTemplatePath = Paths.get(pomPath);
+                String content = new String(Files.readAllBytes(pomTemplatePath));
+                content = content.replace("<groupId>org.ionatomics.darkmatter</groupId>", "<groupId>" + packageName + "</groupId>");
+                content = content.replace("<artifactId>starter</artifactId>", "<artifactId>" + projectName + "</artifactId>");
+                Files.write(pomTemplatePath, content.getBytes());
+            }
 
-        } catch (GitAPIException | IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

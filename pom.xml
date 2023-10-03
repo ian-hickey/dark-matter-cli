@@ -16,14 +16,6 @@
     </properties>
 
     <dependencies>
-        <!-- JGit Dependency -->
-        <!-- https://mvnrepository.com/artifact/org.eclipse.jgit/org.eclipse.jgit -->
-        <dependency>
-            <groupId>org.eclipse.jgit</groupId>
-            <artifactId>org.eclipse.jgit</artifactId>
-            <version>6.7.0.202309050840-r</version>
-        </dependency>
-
         <!-- Apache Commons CLI Dependency -->
         <dependency>
             <groupId>commons-cli</groupId>
