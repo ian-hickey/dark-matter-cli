@@ -20,7 +20,7 @@ public class CLI {
                 """;
         System.out.println(logo + "\uD83D\uDE80");
         var templateMap = new HashMap<String, String>() {{
-            put("resource", "ExampleResource.cfc");
+            put("rest", "ExampleResource.cfc");
             put("entity", "ExampleEntity.cfc");
             put("todo", "Todo.cfc");
         }};
@@ -35,7 +35,8 @@ public class CLI {
         packageNameOption.setRequired(true);
         options.addOption(packageNameOption);
 
-        Option templateOption = new Option("t", "template", true, "Name of the example to add (rest, entity, etc). " +
+        Option templateOption = new Option("t", "template", true,
+                "Name of the example to add (rest, entity, todo, etc). " +
                 "See a full list on Github.");
         templateOption.setRequired(true);
         options.addOption(templateOption);
@@ -58,6 +59,9 @@ public class CLI {
         String packageName = cmd.getOptionValue("package-name");
         String template = cmd.getOptionValue("template");
 
+        if (!templateMap.containsKey(template)) {
+            throw new RuntimeException("Unable to find the template. Please check the -t option and retry.");
+        }
         try {
             // Clone the git repository
             ProcessBuilder processBuilder = new ProcessBuilder("git", "clone", gitUrl, projectName);
@@ -79,7 +83,7 @@ public class CLI {
                     File.separator + "resources" + File.separator + "templates" + File.separator +
                     templateMap.get(template);
             InputStream resourceStream = CLI.class.getResourceAsStream(
-                    File.separator + "templates" + File.separator + templateMap.get(template));
+                    "templates/" + templateMap.get(template));
 
             if (resourceStream != null) {
                 // Copy the example to the new project
@@ -94,6 +98,16 @@ public class CLI {
                 content = content.replace("<groupId>org.ionatomics.darkmatter</groupId>", "<groupId>" + packageName + "</groupId>");
                 content = content.replace("<artifactId>starter</artifactId>", "<artifactId>" + projectName + "</artifactId>");
                 Files.write(pomTemplatePath, content.getBytes());
+
+                var osCommand = "";
+                if (System.getProperty("os.name").contains("Win")){
+                    osCommand = ".\\mvnw compile quarkus:dev";
+                }else{
+                    osCommand = "sudo ./mvnw compile quarkus:dev";
+                }
+                System.out.println(projectName + " is ready! use `cd " + projectName +"` followed by `"+osCommand+"`");
+            }else{
+                System.err.println("Unable to find template! Please recheck the -t option and try again.");
             }
 
         } catch (IOException e) {
