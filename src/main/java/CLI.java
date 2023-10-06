@@ -99,13 +99,24 @@ public class CLI {
                 content = content.replace("<artifactId>starter</artifactId>", "<artifactId>" + projectName + "</artifactId>");
                 Files.write(pomTemplatePath, content.getBytes());
 
+                // Update the app name in the readme.md file
+                var rmPath = projectName + File.separator + "README.md"+ File.separator;
+                var rmTemplatePath = Paths.get(rmPath);
+                content = new String(Files.readAllBytes(rmTemplatePath));
+                content = content.replace("# dark matter starter", "# "
+                        + projectName.substring(0, 1).toUpperCase() + projectName.substring(1)
+                        + " - Dark Matter + Quarkus");
+                Files.write(pomTemplatePath, content.getBytes());
+
                 var osCommand = "";
                 if (System.getProperty("os.name").contains("Win")){
-                    osCommand = ".\\mvnw compile quarkus:dev";
+                    osCommand = "Windows: `.\\start-dev.bat`";
                 }else{
-                    osCommand = "sudo ./mvnw compile quarkus:dev";
+                    osCommand = "sudo ./start-dev.sh";
                 }
-                System.out.println(projectName + " is ready! use `cd " + projectName +"` followed by `"+osCommand+"`");
+                System.out.println(projectName + " is ready! use `cd " + projectName + "`");
+                System.out.println("To start Dark Matter + Quarkus: " + osCommand);
+                System.out.println("See the project README.md for more detailed instructions. Enjoy!");
             }else{
                 System.err.println("Unable to find template! Please recheck the -t option and try again.");
             }
