@@ -106,13 +106,13 @@ public class CLI {
                 content = content.replace("# dark matter starter", "# "
                         + projectName.substring(0, 1).toUpperCase() + projectName.substring(1)
                         + " - Dark Matter + Quarkus");
-                Files.write(pomTemplatePath, content.getBytes());
+                Files.write(rmTemplatePath, content.getBytes());
 
                 var osCommand = "";
                 if (System.getProperty("os.name").contains("Win")){
-                    osCommand = "Windows: `.\\start-dev.bat`";
+                    osCommand = "`.\\start-dev.bat`";
                 }else{
-                    osCommand = "sudo ./start-dev.sh";
+                    osCommand = "`sudo ./start-dev.sh`";
                 }
                 System.out.println(projectName + " is ready! use `cd " + projectName + "`");
                 System.out.println("To start Dark Matter + Quarkus: " + osCommand);
