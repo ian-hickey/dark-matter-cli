@@ -18,28 +18,13 @@ public class CLI {
                        |       ||   _   ||   |  | ||    _  |  | ||_|| ||   _   |  |   |    |   |  |   |___ |   |  | |
                        |______| |__| |__||___|  |_||___| |_|  |_|   |_||__| |__|  |___|    |___|  |_______||___|  |_|                                                                                                               \s
                 """;
-        System.out.println(logo + "\uD83D\uDE80");
+        //System.out.println(logo + "\uD83D\uDE80");
         var templateMap = new HashMap<String, String>() {{
             put("rest", "ExampleResource.cfc");
             put("entity", "ExampleEntity.cfc");
             put("todo", "Todo.cfc");
         }};
-        Options options = new Options();
-        Option projectNameOption = new Option("n", "project-name", true, "Project name. No spaces. Lowercase. " +
-                "(todo, my-todo-app)");
-        projectNameOption.setRequired(true);
-        options.addOption(projectNameOption);
-
-        Option packageNameOption = new Option("p", "package-name", true, "Package name. " +
-                "This is normally a domain backwards. org.ionatomics, org.acme, com.ed.ian.");
-        packageNameOption.setRequired(true);
-        options.addOption(packageNameOption);
-
-        Option templateOption = new Option("t", "template", true,
-                "Name of the example to add (rest, entity, todo, etc). " +
-                "See a full list on Github.");
-        templateOption.setRequired(true);
-        options.addOption(templateOption);
+        Options options = getOptions();
 
         CommandLineParser parser = new DefaultParser();
         HelpFormatter formatter = new HelpFormatter();
@@ -124,5 +109,29 @@ public class CLI {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private static Options getOptions() {
+        Options options = new Options();
+        Option projectNameOption = new Option("n", "project-name", true, "Project name. No spaces. Lowercase. " +
+                "(todo, my-todo-app)");
+        projectNameOption.setRequired(true);
+        options.addOption(projectNameOption);
+
+        Option packageNameOption = new Option("p", "package-name", true, "Package name. " +
+                "This is normally your domain backwards. org.ionatomics, org.acme, com.ed.ian.");
+        packageNameOption.setRequired(true);
+        options.addOption(packageNameOption);
+
+        Option templateOption = new Option("t", "template", true,
+                "Name of the example to add (rest, entity, todo, etc). " +
+                "See a full list on Github.");
+        templateOption.setRequired(true);
+
+        Option dbOption = new Option("d", "db", true,
+                "Database Type (mysql, mariadb, postgresql, oracle, h2, derby, mssql, db2). ");
+        dbOption.setRequired(false);
+        options.addOption(dbOption);
+        return options;
     }
 }
