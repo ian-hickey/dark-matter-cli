@@ -43,10 +43,12 @@ public class CLI {
         String projectName = cmd.getOptionValue("project-name");
         String packageName = cmd.getOptionValue("package-name");
         String template = cmd.getOptionValue("template");
+        String dbType = cmd.getOptionValue("db");
 
         if (!templateMap.containsKey(template)) {
             throw new RuntimeException("Unable to find the template. Please check the -t option and retry.");
         }
+
         try {
             // Clone the git repository
             ProcessBuilder processBuilder = new ProcessBuilder("git", "clone", gitUrl, projectName);
