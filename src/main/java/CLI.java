@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.io.IOException;
 import java.nio.file.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class CLI {
@@ -19,11 +20,16 @@ public class CLI {
                        |______| |__| |__||___|  |_||___| |_|  |_|   |_||__| |__|  |___|    |___|  |_______||___|  |_|                                                                                                               \s
                 """;
         //System.out.println(logo + "\uD83D\uDE80");
-        var templateMap = new HashMap<String, String>() {{
-            put("rest", "ExampleResource.cfc");
-            put("entity", "ExampleEntity.cfc");
-            put("todo", "Todo.cfc");
+        var templateMap = new HashMap<String, ArrayList<String>>() {{
+            put("rest", new ArrayList<>(){{ add("ExampleResource.cfc"); }});
+            put("entity", new ArrayList<>(){{
+                add("ProductResource.cfc");
+                add("model/Product.cfc");}});
+            put("todo", new ArrayList<>(){{
+                add("TodoResource.cfc");
+                add("model/Todo.cfc");}});
         }};
+
         Options options = getOptions();
 
         CommandLineParser parser = new DefaultParser();
@@ -61,52 +67,56 @@ public class CLI {
 
             // Create the directory structure
             Path directoryPath = Paths.get(projectName + File.separator
-                    + "src"+ File.separator + "main" + File.separator + "cfscript" + File.separator
+                    + "src" + File.separator + "main" + File.separator + "cfscript" + File.separator
                     + packageName.replace(".", File.separator));
             Files.createDirectories(directoryPath);
 
             // Copy the template file
-            String tempPath = projectName + File.separator + "src"+ File.separator + "main" +
-                    File.separator + "resources" + File.separator + "templates" + File.separator +
-                    templateMap.get(template);
-            InputStream resourceStream = CLI.class.getResourceAsStream(
-                    "templates/" + templateMap.get(template));
+            var exampleTemplates = templateMap.get(template);
+            for (var exampleTemplate : exampleTemplates) {
+                String tempPath = projectName + File.separator + "src" + File.separator + "main" +
+                        File.separator + "resources" + File.separator + "templates" + File.separator +
+                        exampleTemplate;
+                InputStream resourceStream = CLI.class.getResourceAsStream(
+                        "templates/" + exampleTemplate);
 
-            if (resourceStream != null) {
-                // Copy the example to the new project
-                Path templatePath = Paths.get(tempPath);
-                Path destinationPath = directoryPath.resolve(templatePath.getFileName());
-                Files.copy(resourceStream, destinationPath);
+                if (resourceStream != null) {
+                    // Copy the example to the new project
+                    Path templatePath = Paths.get(tempPath);
+                    Path destinationPath = directoryPath.resolve(templatePath.getFileName());
+                    Files.copy(resourceStream, destinationPath);
 
-                // Update the groupid and artifact id in the POM file
-                var pomPath = projectName + File.separator + "pom.xml"+ File.separator;
-                var pomTemplatePath = Paths.get(pomPath);
-                String content = new String(Files.readAllBytes(pomTemplatePath));
-                content = content.replace("<groupId>org.ionatomics.darkmatter</groupId>", "<groupId>" + packageName + "</groupId>");
-                content = content.replace("<artifactId>starter</artifactId>", "<artifactId>" + projectName + "</artifactId>");
-                Files.write(pomTemplatePath, content.getBytes());
+                    // Update the groupid and artifact id in the POM file
+                    var pomPath = projectName + File.separator + "pom.xml" + File.separator;
+                    var pomTemplatePath = Paths.get(pomPath);
+                    String content = new String(Files.readAllBytes(pomTemplatePath));
+                    content = content.replace("<groupId>org.ionatomics.darkmatter</groupId>", "<groupId>" + packageName + "</groupId>");
+                    content = content.replace("<artifactId>starter</artifactId>", "<artifactId>" + projectName + "</artifactId>");
+                    Files.write(pomTemplatePath, content.getBytes());
 
-                // Update the app name in the readme.md file
-                var rmPath = projectName + File.separator + "README.md"+ File.separator;
-                var rmTemplatePath = Paths.get(rmPath);
-                content = new String(Files.readAllBytes(rmTemplatePath));
-                content = content.replace("# dark matter starter", "# "
-                        + projectName.substring(0, 1).toUpperCase() + projectName.substring(1)
-                        + " - Dark Matter + Quarkus");
-                Files.write(rmTemplatePath, content.getBytes());
-
-                var osCommand = "";
-                if (System.getProperty("os.name").contains("Win")){
-                    osCommand = "`.\\start-dev.bat`";
-                }else{
-                    osCommand = "`sudo ./start-dev.sh`";
+                    // Update the app name in the readme.md file
+                    var rmPath = projectName + File.separator + "README.md" + File.separator;
+                    var rmTemplatePath = Paths.get(rmPath);
+                    content = new String(Files.readAllBytes(rmTemplatePath));
+                    content = content.replace("# dark matter starter", "# "
+                            + projectName.substring(0, 1).toUpperCase() + projectName.substring(1)
+                            + " - Dark Matter + Quarkus");
+                    Files.write(rmTemplatePath, content.getBytes());
+                } else {
+                    System.err.println("Unable to find template! Please recheck the -t option and try again.");
+                    System.exit(1);
                 }
-                System.out.println(projectName + " is ready! use `cd " + projectName + "`");
-                System.out.println("To start Dark Matter + Quarkus: " + osCommand);
-                System.out.println("See the project README.md for more detailed instructions. Enjoy!");
-            }else{
-                System.err.println("Unable to find template! Please recheck the -t option and try again.");
             }
+
+            var osCommand = "";
+            if (System.getProperty("os.name").contains("Win")) {
+                osCommand = "`.\\start-dev.bat`";
+            } else {
+                osCommand = "`sudo ./start-dev.sh`";
+            }
+            System.out.println(projectName + " is ready! use `cd " + projectName + "`");
+            System.out.println("To start Dark Matter + Quarkus: " + osCommand);
+            System.out.println("See the project README.md for more detailed instructions. Enjoy!");
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -129,6 +139,7 @@ public class CLI {
                 "Name of the example to add (rest, entity, todo, etc). " +
                 "See a full list on Github.");
         templateOption.setRequired(true);
+        options.addOption(templateOption);
 
         Option dbOption = new Option("d", "db", true,
                 "Database Type (mysql, mariadb, postgresql, oracle, h2, derby, mssql, db2). ");
