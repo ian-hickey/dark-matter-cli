@@ -2,6 +2,7 @@
 @Table(name = "products")
 @NamedQuery(name = "Products.findAll", query = "SELECT p FROM Product p ORDER BY p.name", hints = @QueryHint(name = "org.hibernate.cacheable", value = "true"))
 @Cacheable
+@WithSessionOnDemand
 component name="Product" extends="PanacheEntity" {
 
     /* ID field is added automatically. */
