@@ -88,7 +88,6 @@ public class CLI {
                 if (resourceStream != null) {
                     // Copy the example to the new project
                     Path baseDirectory = exampleTemplate.startsWith("templates/") ? directoryPath : templatesBasePath;
-                    System.out.println(">>>"+baseDirectory);
                     Path relativePathFromBase = templatesBasePath.relativize(Paths.get(tempPath));
                     Path destinationPath = baseDirectory.resolve(relativePathFromBase);
 
@@ -96,8 +95,8 @@ public class CLI {
                     Files.createDirectories(destinationPath.getParent());  // We only want to create the parent directories
                     System.out.println("Creating: " + destinationPath);
 
-                    // If this is the
-                    // If this is entity, we need to replace the package in the example
+                    // If this is entity example and the template we are processing is the ProductResource,
+                    // we need to replace the package in the example
                     if (template.equals("entity") && exampleTemplate.equals("templates/ProductResource.cfc")) {
                         var content = new BufferedReader(new InputStreamReader(resourceStream, StandardCharsets.UTF_8))
                                 .lines()
@@ -110,8 +109,7 @@ public class CLI {
                         Files.writeString(destinationPath, content, StandardCharsets.UTF_8,
                                 StandardOpenOption.WRITE, StandardOpenOption.CREATE,
                                 StandardOpenOption.TRUNCATE_EXISTING);
-
-                    }else{
+                    } else {
                         Files.copy(resourceStream, destinationPath);
                     }
 
@@ -127,7 +125,8 @@ public class CLI {
             String content = new String(Files.readAllBytes(pomTemplatePath));
             content = content.replace("<groupId>org.ionatomics.darkmatter</groupId>", "<groupId>" + packageName + "</groupId>");
             content = content.replace("<artifactId>starter</artifactId>", "<artifactId>" + projectName + "</artifactId>");
-            // add the correct database dependency
+
+            // Add the correct database dependency
             content = content.replace("mysql", dbType);//defaults to mysql
             Files.write(pomTemplatePath, content.getBytes());
 
@@ -140,14 +139,28 @@ public class CLI {
                     + " - Dark Matter + Quarkus");
             Files.write(rmTemplatePath, content.getBytes());
 
-            // Print some instructions
+            // Update - Append lines to the application.properties depending on the example selected.
+            if (template.equals("entity")) {
+                // With the entity example, we need to append the sql file location.
+                Path appPath = Paths.get("src", "main", "resources", "application.properties");
+                String propertiesPath = appPath.toAbsolutePath().toString();
+                String lineToAdd = "quarkus.hibernate-orm.sql-load-script=products.sql";
+
+                Path path = Paths.get(propertiesPath);
+                try {
+                    Files.write(path, lineToAdd.getBytes(), StandardOpenOption.APPEND);
+                } catch (IOException e) {
+                    System.err.println("Error writing to file: " + e.getMessage());
+                }
+            }
+
+            // Print usage instructions
             var osCommand = "";
             if (System.getProperty("os.name").contains("Win")) {
                 osCommand = "`.\\start-dev.bat`";
             } else {
                 osCommand = "`sudo ./start-dev.sh`";
             }
-
 
             System.out.println(projectName + " is ready! use `cd " + projectName + "`");
             System.out.println("To start Dark Matter + Quarkus: " + osCommand);

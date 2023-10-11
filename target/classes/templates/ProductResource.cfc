@@ -8,12 +8,13 @@ component name="ProductResource" hint="This is a REST controller for products" {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/products")
+    @Transactional
     public Response function getProducts() {
         // You can use the Log object to log from anywhere.
-        Log.info("GET Products");
+        Log.info("GET All Products");
 
         // Serialization is automatic based on the @Produces annotation on this method
-        var products = ${packageName}.Product.listAll();
+        var products = ${packageName}.model.Product.listAll();
         return Response.ok(products).build();
     }
 
