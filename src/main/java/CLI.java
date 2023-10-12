@@ -142,9 +142,9 @@ public class CLI {
             // Update - Append lines to the application.properties depending on the example selected.
             if (template.equals("entity")) {
                 // With the entity example, we need to append the sql file location.
-                Path appPath = Paths.get("src", "main", "resources", "application.properties");
+                Path appPath = Paths.get(projectName,"src", "main", "resources", "application.properties");
                 String propertiesPath = appPath.toAbsolutePath().toString();
-                String lineToAdd = "quarkus.hibernate-orm.sql-load-script=products.sql";
+                String lineToAdd = System.lineSeparator() + "quarkus.hibernate-orm.sql-load-script=products.sql";
 
                 Path path = Paths.get(propertiesPath);
                 try {
